@@ -1,6 +1,6 @@
-"use client";
 
-import { useEffect, useRef, useState } from 'react';
+
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
@@ -49,9 +49,15 @@ const ImageSequenceAnimation = ({ imageFolder, animatedText, animationLenght,  t
         });
     }, [frameCount]);
 
+    const [hasMounted, setHasMounted] = useState(false);
+
+    useLayoutEffect(() => {
+        setHasMounted(true);
+    }, []);
+
     // --- EFFECT: SETUP CANVAS AND ANIMATION ---
     useEffect(() => {
-        if (!loading && images.length > 0 && canvasRef.current && containerRef.current) {
+        if (hasMounted && !loading && images.length > 0 && canvasRef.current && containerRef.current) {
             const canvas = canvasRef.current;
             const context = canvas.getContext('2d');
             const firstImage = images[0];
@@ -66,50 +72,53 @@ const ImageSequenceAnimation = ({ imageFolder, animatedText, animationLenght,  t
             // Create a virtual object to animate its 'frame' property
             const frameScrubber = { frame: 0 };
 
-            // Create the GSAP timeline
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: triggerStart,
-                    end: '+=3000', // The scroll distance over which the animation occurs
-                    scrub: 1,      // Smoothly link animation to scrollbar (a value of 1 provides a little smoothing)
-                    pin: true,     // Pin the container while scrolling through the animation
-                    anticipatePin: 1,
-                },
-            });
+            const ctx = gsap.context(() => {
+                // Create the GSAP timeline
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: triggerStart,
+                        end: '+=3000', // The scroll distance over which the animation occurs
+                        scrub: 1,      // Smoothly link animation to scrollbar (a value of 1 provides a little smoothing)
+                        pin: true,     // Pin the container while scrolling through the animation
+                    },
+                });
 
-            // Animate the 'frame' property of our virtual object
-            tl.to(frameScrubber, {
-                frame: frameCount - 1,
-                roundProps: 'frame', // Ensure the frame number is always an integer
-                ease: 'none',
-                onUpdate: () => {
-                    if (context && images[frameScrubber.frame]) {
-                        // On each update, draw the corresponding image frame to the canvas
-                        context.clearRect(0, 0, canvas.width, canvas.height);
-                        context.drawImage(images[frameScrubber.frame], 0, 0);
+                // Animate the 'frame' property of our virtual object
+                tl.to(frameScrubber, {
+                    frame: frameCount - 1,
+                    roundProps: 'frame', // Ensure the frame number is always an integer
+                    ease: 'none',
+                    onUpdate: () => {
+                        if (context && images[frameScrubber.frame]) {
+                            // On each update, draw the corresponding image frame to the canvas
+                            context.clearRect(0, 0, canvas.width, canvas.height);
+                            context.drawImage(images[frameScrubber.frame], 0, 0);
 
 
-                    }
-                },
-            }).to(
-                textRef.current,
-                {
-                    opacity: 1,
-                    y: 0,
-                    ease: 'power2.out',
-                },
-                '<50%'
-            ).to(
-                backgroundRef.current,
-                {
-                    opacity: 1,
-                    ease: 'power2.out',
-                },
-                '>'
-            );
+                        }
+                    },
+                }).to(
+                    textRef.current,
+                    {
+                        opacity: 1,
+                        y: 0,
+                        ease: 'power2.out',
+                    },
+                    '<50%'
+                ).to(
+                    backgroundRef.current,
+                    {
+                        opacity: 1,
+                        ease: 'power2.out',
+                    },
+                    '>'
+                );
+            }, containerRef); // scope the context to the container
+
+            return () => ctx.revert(); // cleanup
         }
-    }, [loading, images, frameCount]);
+    }, [loading, images, frameCount, hasMounted]);
 
     // --- RENDER ---
     return (

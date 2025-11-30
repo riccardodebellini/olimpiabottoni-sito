@@ -115,6 +115,14 @@ export default function RootLayout({
                             >
                               <Link href="/organigramma">Team</Link>
                             </NavigationMenuLink>
+                          </NavigationMenuItem> 
+                            <NavigationMenuItem>
+                            <NavigationMenuLink
+                              asChild
+                              className={navigationMenuTriggerStyle()}
+                            >
+                              <Link href="/organigramma">test</Link>
+                            </NavigationMenuLink>
                           </NavigationMenuItem>
                         </NavigationMenuList>
                       </NavigationMenu>
