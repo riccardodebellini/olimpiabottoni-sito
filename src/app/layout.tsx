@@ -108,20 +108,12 @@ export default function RootLayout({
                             </NavigationMenuLink>
                           </NavigationMenuItem>
 
-                          <NavigationMenuItem>
-                            <NavigationMenuLink
-                              asChild
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Link href="/organigramma">Team</Link>
-                            </NavigationMenuLink>
-                          </NavigationMenuItem> 
                             <NavigationMenuItem>
                             <NavigationMenuLink
                               asChild
                               className={navigationMenuTriggerStyle()}
                             >
-                              <Link href="/organigramma">test</Link>
+                              <Link href="/organigramma">Team</Link>
                             </NavigationMenuLink>
                           </NavigationMenuItem>
                         </NavigationMenuList>
